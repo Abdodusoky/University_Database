@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>University Database</title>
+    <style>
+        /* CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #4caf50;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .table-container {
+            margin: 20px auto;
+            padding: 10px;
+            width: 90%;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        .controls {
+            margin: 20px 0;
+        }
+
+        .controls input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>University Database</h1>
+
+    <!-- Buttons for each table -->
+    <button onclick="loadDepartmentData()">Departments</button>
+    <button onclick="loadInstructorData()">Instructors</button>
+    <button onclick="loadStudentData()">Students</button>
+    <button onclick="loadCourseData()">Courses</button>
+    <button onclick="loadSectionData()">Sections</button>
+    <button onclick="loadClassroomData()">Classrooms</button>
+    <button onclick="loadTimeslotData()">Timeslots</button>
+    <button onclick="loadPeriodData()">Periods</button>
+    <button onclick="loadOffersData()">Offers</button>
+    <button onclick="loadAdvisesData()">Advises</button>
+    <button onclick="loadTeachesData()">Teaches</button>
+    <button onclick="loadTakesData()">Takes</button>
+
+    <!-- Table container -->
+    <div id="tableContainer" class="table-container" style="display: none;">
+        <h2 id="tableTitle"></h2>
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search by ID">
+            <button onclick="searchById()">Search</button>
+            <button onclick="resetTable()">Reset</button>
+            <br>
+            <input type="text" id="addRowInput" placeholder="Enter row values (comma-separated)">
+            <button onclick="addRow()">Add Row</button>
+        </div>
+        <table>
+            <thead id="tableHeader"></thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+
+    <script>
+        let currentTableData = []; // To hold the current table data
+        let currentTableHeaders = []; // To hold the current table headers
+
+        function populateTable(title, headers, data) {
+            currentTableData = data;
+            currentTableHeaders = headers;
+
+            const tableContainer = document.getElementById("tableContainer");
+            tableContainer.style.display = "block";
+
+            document.getElementById("tableTitle").innerText = title;
+
+            const tableHeader = document.getElementById("tableHeader");
+            tableHeader.innerHTML = "";
+            const headerRow = document.createElement("tr");
+            headers.forEach(header => {
+                const th = document.createElement("th");
+                th.innerText = header;
+                headerRow.appendChild(th);
+            });
+            headerRow.appendChild(document.createElement("th")).innerText = "Actions";
+            tableHeader.appendChild(headerRow);
+
+            const tableBody = document.getElementById("tableBody");
+            tableBody.innerHTML = "";
+            data.forEach((row, index) => {
+                const tr = document.createElement("tr");
+                headers.forEach(header => {
+                    const td = document.createElement("td");
+                    td.innerText = row[header];
+                    tr.appendChild(td);
+                });
+
+                // Create Update and Delete buttons
+                const updateButton = document.createElement("button");
+                updateButton.innerText = "Update";
+                updateButton.onclick = () => updateRow(index);
+                const deleteButton = document.createElement("button");
+                deleteButton.innerText = "Delete";
+                deleteButton.onclick = () => deleteRow(index);
+
+                const actionsTd = document.createElement("td");
+                actionsTd.appendChild(updateButton);
+                actionsTd.appendChild(deleteButton);
+                tr.appendChild(actionsTd);
+
+                tableBody.appendChild(tr);
+            });
+        }
+
+        // Example Table Data (Add more for each table)
+        function loadDepartmentData() {
+            populateTable("Departments", ["dep_id", "dep_name", "dep_location", "budget"], [
+                { dep_id: 1, dep_name: "CS", dep_location: "A", budget: 100000 },
+                { dep_id: 2, dep_name: "Math", dep_location: "B", budget: 80000 },
+            ]);
+        }
+
+        function loadInstructorData() {
+            populateTable("Instructors", ["inst_id", "first_name", "last_name", "salary", "dep_id"], [
+                { inst_id: 1, first_name: "John", last_name: "Doe", salary: 60000, dep_id: 1 },
+                { inst_id: 2, first_name: "Jane", last_name: "Smith", salary: 70000, dep_id: 2 },
+            ]);
+        }
+
+        function loadStudentData() {
+            populateTable("Students", ["student_id", "first_name", "last_name", "major"], [
+                { student_id: 1, first_name: "Alice", last_name: "Johnson", major: "CS" },
+                { student_id: 2, first_name: "Bob", last_name: "Williams", major: "Math" },
+            ]);
+        }
+
+        function loadCourseData() {
+            populateTable("Courses", ["course_id", "course_name", "department"], [
+                { course_id: 101, course_name: "Computer Science 101", department: "CS" },
+                { course_id: 102, course_name: "Calculus I", department: "Math" },
+            ]);
+        }
+
+        function loadSectionData() {
+            populateTable("Sections", ["section_id", "course_id", "semester"], [
+                { section_id: 1, course_id: 101, semester: "Fall 2024" },
+                { section_id: 2, course_id: 102, semester: "Spring 2024" },
+            ]);
+        }
+
+        function loadClassroomData() {
+            populateTable("Classrooms", ["classroom_id", "building", "capacity"], [
+                { classroom_id: 1, building: "A", capacity: 30 },
+                { classroom_id: 2, building: "B", capacity: 50 },
+            ]);
+        }
+
+        function loadTimeslotData() {
+            populateTable("Timeslots", ["timeslot_id", "day", "start_time", "end_time"], [
+                { timeslot_id: 1, day: "Monday", start_time: "9:00 AM", end_time: "10:30 AM" },
+                { timeslot_id: 2, day: "Wednesday", start_time: "11:00 AM", end_time: "12:30 PM" },
+            ]);
+        }
+
+        function loadPeriodData() {
+            populateTable("Periods", ["period_id", "start_date", "end_date"], [
+                { period_id: 1, start_date: "2024-08-01", end_date: "2024-12-15" },
+                { period_id: 2, start_date: "2024-01-15", end_date: "2024-05-10" },
+            ]);
+        }
+
+        function loadOffersData() {
+            populateTable("Offers", ["course_id", "instructor_id", "semester"], [
+                { course_id: 101, instructor_id: 1, semester: "Fall 2024" },
+                { course_id: 102, instructor_id: 2, semester: "Spring 2024" },
+            ]);
+        }
+
+        function loadAdvisesData() {
+            populateTable("Advises", ["student_id", "advisor_id"], [
+                { student_id: 1, advisor_id: 1 },
+                { student_id: 2, advisor_id: 2 },
+            ]);
+        }
+
+        function loadTeachesData() {
+            populateTable("Teaches", ["instructor_id", "course_id", "semester"], [
+                { instructor_id: 1, course_id: 101, semester: "Fall 2024" },
+                { instructor_id: 2, course_id: 102, semester: "Spring 2024" },
+            ]);
+        }
+
+        function loadTakesData() {
+            populateTable("Takes", ["student_id", "course_id", "semester"], [
+                { student_id: 1, course_id: 101, semester: "Fall 2024" },
+                { student_id: 2, course_id: 102, semester: "Spring 2024" },
+            ]);
+        }
+
+        function addRow() {
+            const rowData = document.getElementById("addRowInput").value.split(",");
+            if (rowData.length !== currentTableHeaders.length) {
+                alert("Please enter the correct number of values.");
+                return;
+            }
+            const newRow = {};
+            currentTableHeaders.forEach((header, index) => {
+                newRow[header] = rowData[index].trim();
+            });
+            currentTableData.push(newRow);
+            populateTable(document.getElementById("tableTitle").innerText, currentTableHeaders, currentTableData);
+        }
+
+        function deleteRow(index) {
+            currentTableData.splice(index, 1);
+            populateTable(document.getElementById("tableTitle").innerText, currentTableHeaders, currentTableData);
+        }
+
+        function updateRow(index) {
+            const row = currentTableData[index];
+            const updatedValues = prompt("Enter updated values (comma-separated):", Object.values(row).join(","));
+            if (updatedValues) {
+                const updatedRow = updatedValues.split(",");
+                currentTableHeaders.forEach((header, idx) => {
+                    row[header] = updatedRow[idx].trim();
+                });
+                populateTable(document.getElementById("tableTitle").innerText, currentTableHeaders, currentTableData);
+            }
+        }
+
+        function searchById() {
+            const searchId = document.getElementById("searchInput").value.trim();
+            if (!searchId) {
+                alert("Enter an ID to search.");
+                return;
+            }
+            const filteredData = currentTableData.filter(row => row[currentTableHeaders[0]].toString() === searchId);
+            if (filteredData.length === 0) {
+                alert("No data found.");
+            } else {
+                populateTable(document.getElementById("tableTitle").innerText, currentTableHeaders, filteredData);
+            }
+        }
+
+        function resetTable() {
+            populateTable(document.getElementById("tableTitle").innerText, currentTableHeaders, currentTableData);
+        }
+    </script>
+</body>
+
+</html>
